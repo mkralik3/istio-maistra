@@ -16,15 +16,22 @@ package install
 
 import (
 	"os"
+	"sync"
 	"path/filepath"
 
 	"istio.io/istio/pkg/file"
 	"istio.io/istio/pkg/util/sets"
 )
 
+var (
+	lock = &sync.Mutex{}
+)
 // Copies/mirrors any files present in a single source dir to N number of target dirs
 // and returns a set of the filenames copied.
 func copyBinaries(srcDir string, targetDirs []string, binariesPrefix string) (sets.Set[string], error) {
+	lock.Lock()
+	defer lock.Unlock()
+
 	copiedFilenames := sets.Set[string]{}
 	srcFiles, err := os.ReadDir(srcDir)
 	if err != nil {

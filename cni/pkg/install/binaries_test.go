@@ -17,6 +17,7 @@ package install
 import (
 	"path/filepath"
 	"testing"
+	"time"
 
 	file2 "istio.io/istio/pkg/file"
 	"istio.io/istio/pkg/test/util/assert"
@@ -107,4 +108,18 @@ func TestCopyBinariesWhenTmpExist(t *testing.T) {
 	// check that bins are still there
 	assert.Equal(t, file2.Exists(filepath.Join(targetDir, "v2-5-istio-cni")), true)
 	assert.Equal(t, file2.Exists(filepath.Join(targetDir, "v2-6-istio-cni")), true)
+}
+
+func TestCopyBinariesGoroutines(t *testing.T) {
+	srcDir := t.TempDir()
+	file.WriteOrFail(t, filepath.Join(srcDir, "istio-cni"), []byte("content"))
+	targetDir := t.TempDir()
+
+	go func() {
+		_, err := copyBinaries(srcDir, []string{targetDir}, "v2-6-")
+		assert.NoError(t, err)
+	}()
+	time.Sleep(3*time.Second)
+	_, err := copyBinaries(srcDir, []string{targetDir}, "v2-6-")
+	assert.NoError(t, err)
 }

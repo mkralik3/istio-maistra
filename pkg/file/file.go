@@ -20,6 +20,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // AtomicCopy copies file by reading the file then writing atomically into the target directory
@@ -97,7 +98,8 @@ func AtomicWriteReader(path string, data io.Reader, mode os.FileMode) error {
 	if err := tmpFile.Close(); err != nil {
 		return err
 	}
-
+	//TODO for testing Goroutines
+	time.Sleep(20*time.Second)
 	return os.Rename(tmpFile.Name(), path)
 }
 
